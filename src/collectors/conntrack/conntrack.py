@@ -18,6 +18,10 @@ class ConnTrackCollector(diamond.collector.Collector):
     """
     Collector of number of conntrack connections
     """
+    def __init__(self, *args, **kwargs):
+        self.warned_about_kmod = False
+
+        super(ConnTrackCollector, self).__init__(*args, **kwargs)
 
     def get_default_config_help(self):
         """
@@ -80,10 +84,11 @@ class ConnTrackCollector(diamond.collector.Collector):
                     self.log.error("Failed to collect from '%s': %s",
                                    fpath,
                                    exception)
-        if not collected:
+        if not collected and not self.warned_about_kmod:
             self.log.error('No metric was collected, looks like '
                            'nf_conntrack/ip_conntrack kernel module was '
                            'not loaded')
+            self.warned_about_kmod = True
         else:
             for key in collected.keys():
                 self.publish(key, collected[key])
