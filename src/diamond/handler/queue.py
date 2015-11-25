@@ -5,6 +5,7 @@ This is a meta handler to act as a shim for the new threading model. Please
 do not try to use it as a normal handler
 """
 
+import Queue
 from Handler import Handler
 
 
@@ -43,5 +44,8 @@ class QueueHandler(Handler):
         process per collector
         """
         if len(self.metrics) > 0:
-            self.queue.put(self.metrics, block=False)
+            try:
+                self.queue.put(self.metrics, block=False)
+            except Queue.Full:
+                self._throttle_error('Metric queue full, overloaded handlers?')
             self.metrics = []

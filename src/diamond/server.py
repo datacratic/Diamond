@@ -58,7 +58,7 @@ class Server(object):
         self.manager = multiprocessing.Manager()
         if setproctitle:
             setproctitle(oldproctitle)
-        self.metric_queue = self.manager.Queue()
+        self.metric_queue = None
 
     def run(self):
         """
@@ -71,6 +71,9 @@ class Server(object):
         self.config = load_config(self.configfile)
 
         collectors = load_collectors(self.config['server']['collectors_path'])
+
+        metric_queue_size = int(self.config.get('metric_queue_size', 512))
+        self.metric_queue = self.manager.Queue(metric_queue_size)
 
         #######################################################################
         # Handlers
